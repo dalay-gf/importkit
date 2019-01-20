@@ -60,11 +60,11 @@ class gf_stock_handler_field_region_price extends views_handler_field_numeric{
 
   public function get_value($values, $field = NULL) {
     $value = parent::get_value($values);
-    if ($currency = $this->gf_stock_get_currency()) {
-      // Приводим значение, полученное из базы, к отображению
-      // в дефолтной валюте(выбранной в настройках модуля).
-      return _gf_stock_convert_to_default_currency($value, $currency);
-    }
+    // if ($currency = $this->gf_stock_get_currency()) {
+    //   // Приводим значение, полученное из базы, к отображению
+    //   // в дефолтной валюте(выбранной в настройках модуля).
+    //   return _gf_stock_convert_to_default_currency($value, $currency);
+    // }
     return $value;
   }
 
@@ -81,14 +81,15 @@ class gf_stock_handler_field_region_price extends views_handler_field_numeric{
     $this->ensure_my_table();
     $nid = 'node.nid';
     $price_id = $this->options['gf_stock_region_price'];
-    $region = strtolower($this->gf_stock_get_region_name());
+    $region = $this->gf_stock_get_region_name();
+    $currency = ($region == GF_STOCK_REGION_CN) ? GF_STOCK_CURRENCY_CN : GF_STOCK_CURRENCY_RU;
     // Значение регионального ценника выводим подзапросом. 
     // Ибо сраный вьюс так и не научился работать с составными
     // первичными ключами. Или я в нем это тупо не нашел(что врядли).
     $expression = "(SELECT price FROM {$this->table_alias} 
-      WHERE nid = {$nid} AND price_id = '$price_id')";
+      WHERE nid = {$nid} AND price_id = '$price_id' AND currency = '$currency')";
     $this->field_alias = $this->query->add_field(NULL, 
-      $expression, $this->table_alias . '_region_' . $region);
+      $expression, $this->table_alias . '_region_' . strtolower($region));
     $this->add_additional_fields();
   }
 }
