@@ -255,18 +255,24 @@ function gf_stock_get_regions() {
  * Переключение региона пользователя.
  */
 function gf_stock_region_switch($region=''){
-  if ($region) {
-    $regions = gf_stock_get_regions();
-    if (!in_array($region, $regions)) return;
-    else {
-      // Метку о выбранном регионе кладем пользователю в сессию.
-      $_SESSION['gf_stock_region'] = $regions[$region];
+  if(uc_cart_get_contents()) {
+    drupal_set_message(t('You cannot change the warehouse region because there are already goods from another regional warehouse in your cart.'), 'warning');
+  }
+  else {
+    if ($region) {
+      $regions = gf_stock_get_regions();
+      if (!in_array($region, $regions)) return;
+      else {
+        // Метку о выбранном регионе кладем пользователю в сессию.
+        $_SESSION['gf_stock_region'] = $regions[$region];
+      }
+    }
+    // Если регион не получен - обнуляем параметр в сессии.
+    elseif (isset($_SESSION['gf_stock_region'])) {
+      unset($_SESSION['gf_stock_region']);
     }
   }
-  // Если регион не получен - обнуляем параметр в сессии.
-  elseif (isset($_SESSION['gf_stock_region'])) {
-    unset($_SESSION['gf_stock_region']);
-  }
+
   drupal_goto();
 }
 
@@ -314,12 +320,16 @@ function gf_stock_block_contents($block) {
 
     //$regions[GF_STOCK_REGION_ALL] = l(t('All'), $region_switch_path, $link_options);
 
+    $current_region = gf_stock_get_current_region();
+
     foreach(array_keys(gf_stock_get_regions()) as $region) {
-      $regions[$region] = l(t($region), $region_switch_path . '/' . $region, $link_options);
+      $region_data = ($current_region === $region) ? t($region) : 
+        l(t($region), $region_switch_path . '/' . $region, $link_options);
+      $regions[$region] = $region_data;
     }
     return theme('gf_stock_block_region_switcher', [
       'regions' => $regions,
-      'current_region' => gf_stock_get_current_region()
+      'current_region' => $current_region
     ]);
   }
 }
