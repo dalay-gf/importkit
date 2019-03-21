@@ -692,7 +692,10 @@ function cml_store_content_create_imagefield(
   $file_directory = token_replace($file_directory, $data);
   $destination = file_stream_wrapper_uri_normalize($scheme . $file_directory);
   if (file_prepare_directory($destination, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-    $destination .= '/' . basename($path_source);
+    // $destination .= '/' . basename($path_source); // хз зачем здесь это (
+                                                     // добавляет третий слеш в схему
+                                                     // адреса файла и
+                                                     // вызывает ошибки при импорте)
     // Уже существующие файлы перезаписываем 
     // (ранее было - переименовать).
     if (variable_get('cml_content_image_settings', 1)) {
